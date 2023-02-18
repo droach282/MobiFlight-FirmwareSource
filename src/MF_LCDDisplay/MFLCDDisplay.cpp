@@ -15,9 +15,12 @@ void MFLCDDisplay::display(const char *string)
 {
     if (!_initialized)
         return;
+
+    char chunk[_cols];
     for (uint8_t line = 0; line != _lines; line++) {
+        strncpy(chunk, &string[line * _cols], _cols);
         _lcdDisplay.setCursor(0, line);
-        _lcdDisplay.writeString(&string[line * _cols], _cols);
+        _lcdDisplay.print(chunk);
     }
 }
 
@@ -27,8 +30,10 @@ void MFLCDDisplay::attach(byte address, byte cols, byte lines)
     _cols        = cols;
     _lines       = lines;
     _initialized = true;
-    _lcdDisplay.init((uint8_t)address, (uint8_t)cols, (uint8_t)lines);
-    _lcdDisplay.backlight();
+    // _lcdDisplay.init((uint8_t)address, (uint8_t)cols, (uint8_t)lines);
+    _lcdDisplay = Adafruit_LiquidCrystal(address);
+    _lcdDisplay.begin(cols, lines);
+    _lcdDisplay.setBacklight(HIGH);
     Wire.setClock(400000);
     test();
 }
@@ -43,9 +48,9 @@ void MFLCDDisplay::detach()
 void MFLCDDisplay::powerSavingMode(bool state)
 {
     if (state)
-        _lcdDisplay.noBacklight();
+        _lcdDisplay.setBacklight(LOW);
     else
-        _lcdDisplay.backlight();
+        _lcdDisplay.setBacklight(HIGH);
 }
 
 void MFLCDDisplay::test()
